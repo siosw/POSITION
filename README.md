@@ -8,6 +8,7 @@
 * run `python3 visual_positions.py -c <YOUR_SOURCE_INDEX> -r <SERVER_IP> -t <SERVER_OSC_PORT>` 
 
 ### system overview
+```
 ┌────────────────────┐            ┌────────────────────┐
 │Server              │            │Client              │
 │                    │            │                    │
@@ -26,6 +27,7 @@
 ││                  ├┼────────────┼▶                  ││
 │└──────────────────┘│positions   │└──────────────────┘│
 └────────────────────┘            └────────────────────┘
+```
 
 ### list of all possible arguments
 ```
