@@ -38,6 +38,9 @@ s.options.bindAddress          = "0.0.0.0";
 ~hoa_order      = 3;
 ~n_hoa_channels = pow(~hoa_order + 1.0 ,2.0).asInteger;
 
+// kill all other servers
+s.killAll;
+
 s.boot;
 
 s.waitForBoot({
