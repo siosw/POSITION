@@ -4,8 +4,9 @@
 * run `python3 websocket_client.py` to broadcast the position data
 
 ### running the GUI
-* run `python3 websocket_client.py` to connect to the server via websocket
+* run `python3 websocket_client.py -s "85.214.78.6" -p 5000` to connect to the server via websocket
 * run `python3 visual_positions.py -c <YOUR_SOURCE_INDEX> -r <SERVER_IP> -t <SERVER_OSC_PORT>` 
+* default values are `python3 visual_positions.py -c <YOUR_SOURCE_INDEX> -r "85.214.78.6" -t 57121` 
 
 ### system overview
 ```

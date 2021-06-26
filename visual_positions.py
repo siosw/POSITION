@@ -133,8 +133,8 @@ class Canvas(tk.Frame):
       self._drag_data["x"] = event.x
       self._drag_data["y"] = event.y
       # write new position to send queue
-      send.put([(event.x - self.canvas.winfo_width() // 2) / SCALE, 
-                (event.y - self.canvas.winfo_height() // 2) / SCALE])
+      send.put([(event.y - self.canvas.winfo_width() // 2) / SCALE, 
+                (event.x - self.canvas.winfo_height() // 2) / SCALE])
 
 
 def osc_listen(ip, port):
@@ -157,8 +157,8 @@ def osc_send(ip, port):
 def update_pos(_addr, index, azim, elev, dist):
   dist = float(dist) * SCALE
 
-  x = float(dist) * math.cos(float(azim))
-  y = float(dist) * math.sin(float(azim))
+  x = float(dist) * math.sin(float(azim))
+  y = float(dist) * math.cos(float(azim))
   changes.put([int(index), x, y, float(elev)])
   
 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
   parser.add_argument("-r", "--recv-ip", dest="recv_ip", default='127.0.0.1')
   parser.add_argument("-t", "--recv-port", dest="recv_port", default=57121)
   
-  parser.add_argument("-s", "--scale", dest="scale", default=50, help="set the zoom level")
+  parser.add_argument("-s", "--scale", dest="scale", default=100, help="set the zoom level")
 
   args = parser.parse_args()
 
