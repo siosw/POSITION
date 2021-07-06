@@ -69,6 +69,7 @@ class TcpOscEcho():
 
         self.dispatcher  = dispatcher.Dispatcher()       
         self.dispatcher.set_default_handler(self.default_handler)
+        osc_server.ThreadingOSCUDPServer.allow_reuse_address = True
         self.server = osc_server.ThreadingOSCUDPServer(( "0.0.0.0", osc_port), self.dispatcher) 
         
         self.init_threads()         
