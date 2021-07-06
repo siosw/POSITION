@@ -10,15 +10,14 @@ import argparse
 import sys
 import signal
 import socket
+import select
 
 from pythonosc import osc_server, dispatcher
-from pythonosc import udp_client
 import threading
 import time
 from typing import List, Any
 
-
-
+exit_event = threading.Event()
 
 class Connection:
 
@@ -55,45 +54,34 @@ class Connection:
 class TcpOscEcho():
     
     def __init__(self, tcp_port, osc_port):
-                
-        self.HOST = ''                 # Symbolic name meaning the local host
-        self.PORT = tcp_port               # The port used by the server
+        self.HOST = ''
+        self.PORT = tcp_port
+        self.osc_clients = list()
+        self.clients = list()
+        self.threads = list()
+
         self.serv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.serv_sock.settimeout(10e5)
+        self.serv_sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.serv_sock.settimeout(0.2)
         self.serv_sock.bind((self.HOST, self.PORT))
         self.serv_sock.listen(1)
-        
-        
-        self.serv_sock.settimeout(10e5)
-        o = self.serv_sock.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
-        
-        self.osc_clients    = list()
-        self.clients        = list()
-        self.threads        = list()
 
         self.dispatcher  = dispatcher.Dispatcher()       
         self.dispatcher.set_default_handler(self.default_handler)
-    
         self.server = osc_server.ThreadingOSCUDPServer(( "0.0.0.0", osc_port), self.dispatcher) 
         
-        self.server_thread = threading.Thread(target=self.server.serve_forever)
-        self.server_thread.deamon = True
-        self.server_thread.start() 
-        self.threads.append(self.server_thread)
+        self.init_threads()         
 
-        self.socket_thread = threading.Thread(target=self.connect_sockets)
-        self.socket_thread.deamon = True
-        self.socket_thread.start()   
-        self.threads.append(self.socket_thread)
+    
+    def init_threads(self):
+        targets = [self.start_server, self.connect_sockets, self.disconnect_sockets]
+        for target in targets:
+            th = threading.Thread(target=target)
+            th.start()
+            self.threads.append(th)
 
-        self.discon_thread = threading.Thread(target=self.disconnect_sockets)
-        self.discon_thread.deamon = True
-        self.discon_thread.start()   
-        self.threads.append(self.discon_thread)          
-        
-        # join the threads so they are stopped on exit
-        #       for t in self.threads:  
-        #         t.join()
-            
+
     def default_handler(self, address: str, *osc_arguments: List[Any]) -> None:
          l = len(osc_arguments)
          
@@ -110,70 +98,86 @@ class TcpOscEcho():
 
                 if(c.is_connected):
                     c.connection.send(data.encode())
-                    
-    
-    
+
+
+    def start_server(self):
+        print("starting the server...")
+        th = threading.Thread(target=self.server.serve_forever)
+        th.start()
+
+        exit_event.wait()
+        self.server.shutdown()
+        self.server.server_close()
+        print("osc server shut down...")
+
    
     def connect_sockets(self):
-        
-        while 1:
+        print("Connected to "+str(len(self.clients))+" clients!")
+        print("Ready for new connection")
 
-            
-            print("Connected to "+str(len(self.clients))+" clients!")
+        while True:
+            if exit_event.is_set():
+                break
 
-            print("Ready for new connection")
-            
-            conn, addr = self.serv_sock.accept()
-            
-            self.clients.append(Connection(conn, addr, self.clients))
-            
-            print ("Client %s connected" %str(addr))
+            try:
+                conn, addr = self.serv_sock.accept()
+            except socket.timeout:
+                pass
+            except:
+                raise
+            else:
+                self.clients.append(Connection(conn, addr, self.clients))
+                print ("Client %s connected" %str(addr))
+                print("Connected to "+str(len(self.clients))+" clients!")
+                print("Ready for new connection")
 
- 
+        print("connect_sockets shut down...")
+
+
     def disconnect_sockets(self):
-         
-        while 1:
-            
-            l1 = len(self.clients)
+        while True:
+            if exit_event.is_set():
+                break
+
+            client_disconnected = False
             for c in self.clients[:]:
-                if c.is_connected == False:                    
+                if not c.is_connected:                    
                     self.clients.remove(c)
+                    client_disconnected = True
                             
-            l2 = len(self.clients)   
-            
-            # only print info if a client has been removed
-            if(l1!=l2):
+            if client_disconnected:
                 print("Connected to "+str(len(self.clients))+" clients!")
             
             time.sleep(1)
+
+        print("disonnect_sockets shut down...")   
             
-            
-    def signal_handler(self,signal, frame):
-        print("exiting")
-        sys.exit(0)
                 
-    def keyboardInterruptHandler(self, signal, frame):
-        
+    def keyboardInterruptHandler(self, signal, _frame):
         print("KeyboardInterrupt (ID: {}) has been caught. Cleaning up...".format(signal))
-
+        exit_event.set()
         for t in self.threads:
-            print("killing")
-            t.stop()
+            t.join()
 
-        exit(0)
+        # print(self.threads)
+        time.sleep(1)
         
+        # :(
+        try:
+            sys.exit(2)
+        except:
+            pass
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()        
     
-    parser.add_argument("-o", "--osc-port",    dest = "osc_port", default = 5005, help="Port for receiving local OSC messages.")
-    parser.add_argument("-t", "--tcp-port",    dest = "tcp_port", default = 5000, help="Port for the remote TCP connection.")
+    parser.add_argument("-o", "--osc-port", dest = "osc_port", default = 5005, help="Port for receiving local OSC messages.")
+    parser.add_argument("-t", "--tcp-port", dest = "tcp_port", default = 5000, help="Port for the remote TCP connection.")
 
     args = parser.parse_args()
-    
-    p = TcpOscEcho(args.tcp_port, args.osc_port)
-    
-    signal.signal(signal.SIGINT, p.signal_handler)
 
-    signal.signal(signal.SIGTERM, TcpOscEcho.keyboardInterruptHandler)
+    echo = TcpOscEcho(int(args.tcp_port), int(args.osc_port))
+    signal.signal(signal.SIGINT, echo.keyboardInterruptHandler)
     
