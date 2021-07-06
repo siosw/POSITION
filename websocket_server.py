@@ -62,7 +62,6 @@ class TcpOscEcho():
 
         self.serv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serv_sock.settimeout(10e5)
-        self.serv_sock.re
         self.serv_sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.serv_sock.settimeout(0.2)
         self.serv_sock.bind((self.HOST, self.PORT))
