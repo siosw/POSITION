@@ -1,7 +1,7 @@
 ### preparing the Server
 * run `sclang simple_SERVER.sc` to start the SuperCollider Server
 * the server prints out the `<SERVER_OSC_PORT>`, take note of this
-* run `python3 websocket_client.py` to broadcast the position data
+* run `python3 websocket_server.py` to broadcast the position data
 
 ### running the GUI
 * run `python3 websocket_client.py -s "85.214.78.6" -p 5000` to connect to the server via websocket
