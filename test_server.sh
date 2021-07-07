@@ -7,10 +7,9 @@ done
 
 jobs
 
-sleep 20s
+sleep 2s
 
 for i in {16..1}
 do
   kill %"$i"
-  sleep 3s
 done

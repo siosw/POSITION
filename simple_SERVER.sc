@@ -132,8 +132,9 @@ s.waitForBoot({
 	~binaural_encoders.do({arg e, i; e.map(\elev, ~elev_BUS.index+i)});
 	~binaural_encoders.do({arg e, i; e.map(\dist, ~dist_BUS.index+i)});
 
-	"listening for OSC on port: ".post;
-	NetAddr.langPort.postln;
+	thisProcess.openUDPPort(57121);
+	"listening for OSC on ports: ".post;
+	thisProcess.openPorts.postln;
 
 	// OSC listener for azimuth
 	OSCdef('azim',
