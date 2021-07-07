@@ -39,13 +39,15 @@ class Connection:
     
             self.connection.settimeout(10e5)
             
-            data = self.connection.recv(1024)
+            try:
+                data = self.connection.recv(1024)
+            except ConnectionResetError:
+                self.is_connected = False
+                continue
             
             if not data:                
                 print('Disconnected!')
                 self.is_connected = False
-                
-                
             else:
                 for c in self.clients:            
                     c.connection.sendall(data)
