@@ -98,7 +98,10 @@ class TcpOscEcho():
                     data=data+" "+thisarg
 
                 if(c.is_connected):
-                    c.connection.send(data.encode())
+                    try:
+                        c.connection.send(data.encode())
+                    except BrokenPipeError:
+                        c.is_connected = False
 
 
     def start_server(self):
