@@ -100,7 +100,7 @@ class TcpOscEcho():
                 if(c.is_connected):
                     try:
                         c.connection.send(data.encode())
-                    except ConnectionResetError:
+                    except (BrokenPipeError, ConnectionResetError):
                         c.is_connected = False
 
 
