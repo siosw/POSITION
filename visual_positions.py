@@ -33,7 +33,7 @@ def _create_circle(self, x, y, r=20, **kwargs):
 tk.Canvas.create_circle = _create_circle
 
 class Canvas(tk.Frame):
-  players = [[0 + OFFSET, 0 + OFFSET, 0] for _ in range(16)]
+  players = [[0 + OFFSET, 0 + OFFSET, 0] for _ in range(32)]
 
   def __init__(self):
     super().__init__()
