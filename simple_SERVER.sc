@@ -61,7 +61,7 @@ s.waitForBoot({
 			|
 
 			var sound = In.ar(in_bus);
-			var level = (0.75/(max(0,dist)+1.0))*(0.75/(max(0,dist)+1.0));
+			var level = (0.75/(max(0,dist)+1.0));
 			var bform = HOASphericalHarmonics.coefN3D(~hoa_order, azim, elev) * sound * level;
 
 			Out.ar(out_bus, bform);
@@ -170,7 +170,7 @@ s.waitForBoot({
 	~broadcast_OSC_ROUTINE = Routine({
 		inf.do({
 			var azim, elev, dist;
-			for (0, ~nSystems-1, {
+			for (0, ~nSources-1, {
 			 	arg i;
 
 			 	azim = ~azim_BUS.getnSynchronous(~nInputs)[i];
