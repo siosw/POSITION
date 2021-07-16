@@ -85,8 +85,7 @@ class Canvas(tk.Frame):
     for i, [x, y, r] in enumerate(self.players):
       if i == CTRL:
         pass
-        canvas.create_text(x, y, text=i, tag='ctrl_index')
-        # canvas.create_circle(x, y, r, fill="sky blue", tag="token")
+        # canvas.create_text(x, y, text=i, tag='ctrl_index')
       else:
         canvas.create_circle(x, y, r,fill='pink', tag='player')
         canvas.create_text(x, y, text=i, tag='player_index')
